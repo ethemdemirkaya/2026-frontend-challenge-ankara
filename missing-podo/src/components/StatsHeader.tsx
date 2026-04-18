@@ -5,9 +5,10 @@ interface StatsHeaderProps {
   totalEvents: number;
   totalPeople: number;
   totalSightings: number;
+  confidenceScore: number;
 }
 
-export const StatsHeader = ({ totalEvents, totalPeople, totalSightings }: StatsHeaderProps) => {
+export const StatsHeader = ({ totalEvents, totalPeople, totalSightings, confidenceScore }: StatsHeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const StatsContent = () => (
@@ -59,7 +60,7 @@ export const StatsHeader = ({ totalEvents, totalPeople, totalSightings }: StatsH
           </div>
           <div>
             <div className="text-[9px] sm:text-[10px] uppercase font-bold opacity-60 tracking-wider tooltip tooltip-top" data-tip="Hesaplanan Doğruluk Payı">Tahmini Doğruluk Oranı</div>
-            <div className="text-2xl sm:text-3xl font-black text-base-content/90">%84</div>
+            <div className="text-2xl sm:text-3xl font-black text-base-content/90">%{confidenceScore}</div>
           </div>
         </div>
       </div>

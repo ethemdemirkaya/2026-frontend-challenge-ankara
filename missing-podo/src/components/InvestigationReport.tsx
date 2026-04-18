@@ -1,4 +1,4 @@
-import { type PersonRecord, type TimelineEvent } from "../utils/investigation";
+import { type PersonRecord, type TimelineEvent, calculateInvestigationStats } from "../utils/investigation";
 import { useEffect, useState, useRef } from "react";
 import { 
   Eye, MessageSquare, MapPin, FileText, AlertTriangle, 
@@ -53,24 +53,23 @@ export function InvestigationReport({ processed }: Props) {
     return acc;
   }, {} as Record<string, number>);
 
-  const sightingCount = eventTypes['sighting'] || 0;
+  // En çok görülen lokasyon hesaplaması sadece frekans listesi için kalsın
+  const locationFreq: Record<string, number> = {};
+  events.forEach(e => { if (e.location) locationFreq[e.location] = (locationFreq[e.location] || 0) + 1; });
+
   const messageCount = eventTypes['message'] || 0;
   const checkinCount = eventTypes['checkin'] || 0;
   const noteCount = eventTypes['note'] || 0;
   const tipCount = eventTypes['tip'] || 0;
-  const totalEvents = events.length;
-
-  // En çok görülen lokasyon
-  const locationFreq: Record<string, number> = {};
-  events.forEach(e => { if (e.location) locationFreq[e.location] = (locationFreq[e.location] || 0) + 1; });
-  const hotLocation = Object.entries(locationFreq).sort((a,b) => b[1] - a[1])[0];
 
   // Kaç farklı şahsın birbirine bağlantısı var
   const connectedPeople = people.filter(p => p.connections.size > 0).length;
 
-  // Güven skoru
+  const totalEvents = events.length;
   const suspectRatio = primeSuspect ? (primeSuspect.events.length / totalEvents) * 100 : 0;
-  const confidenceScore = Math.min(95, Math.round(45 + suspectRatio * 0.8 + (sightingCount > 0 ? 12 : 0) + (hotLocation ? 8 : 0)));
+ 
+  // Güven skoru ve diğer istatistikler (merkezi hesaplamadan al)
+  const { confidenceScore, sightingCount, hotLocation } = calculateInvestigationStats(people, events);
 
   // Neden bu karara varıldı
   const reasonings: string[] = [];

@@ -28,11 +28,22 @@ const EVENT_TYPE_META: Record<string, { label: string; color: string; Icon: Reac
 export const SpotlightSearch = ({
   people,
   onSelect,
+  externalOpen,
+  setExternalOpen,
 }: {
   people: PersonRecord[];
   onSelect: (id: string) => void;
+  externalOpen: boolean;
+  setExternalOpen: (val: boolean) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  useEffect(() => {
+    if (externalOpen) {
+      setIsOpen(true);
+      setExternalOpen(false); // Reset to allow repeated triggers
+    }
+  }, [externalOpen, setExternalOpen]);
   const [query, setQuery] = useState("");
   const [activeTypeFilter, setActiveTypeFilter] = useState<FilterType>('all');
   const [activeUrgency, setActiveUrgency] = useState<FilterUrgency>('all');

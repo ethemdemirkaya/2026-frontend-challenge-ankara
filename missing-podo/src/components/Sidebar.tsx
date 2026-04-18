@@ -6,9 +6,10 @@ interface SidebarProps {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onSearch: (term: string) => void;
+  onSpotlight: () => void;
 }
 
-export const Sidebar = ({ people, selectedId, onSelect, onSearch }: SidebarProps) => {
+export const Sidebar = ({ people, selectedId, onSelect, onSearch, onSpotlight }: SidebarProps) => {
   return (
     <aside className="w-80 min-h-full bg-base-100 flex flex-col border-r border-base-content/10 shadow-2xl z-10">
       <div className="p-6 bg-neutral text-neutral-content">
@@ -27,14 +28,23 @@ export const Sidebar = ({ people, selectedId, onSelect, onSearch }: SidebarProps
         </button>
       </div>
 
-      <div className="p-4 relative">
-        <Search className="absolute left-7 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" />
-        <input 
-          type="text" 
-          placeholder="Şahıs Ara..." 
-          className="input input-bordered input-sm w-full rounded-none bg-base-200 pl-10"
-          onChange={(e) => onSearch(e.target.value)}
-        />
+      <div className="p-4 flex flex-col gap-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50" />
+          <input 
+            type="text" 
+            placeholder="Listeyi Filtrele..." 
+            className="input input-bordered input-sm w-full rounded-lg bg-base-200 pl-10 text-xs"
+            onChange={(e) => onSearch(e.target.value)}
+          />
+        </div>
+        <button 
+          onClick={onSpotlight}
+          className="btn btn-xs btn-outline border-base-content/20 hover:border-primary hover:bg-primary/10 hover:text-primary gap-2 lowercase italic font-normal tracking-wide"
+        >
+          <Search className="w-3 h-3" />
+          Gelişmiş Arama (Ctrl+K)
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 pb-4">

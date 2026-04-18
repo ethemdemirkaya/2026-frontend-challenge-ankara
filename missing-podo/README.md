@@ -2,8 +2,6 @@
 
 Ankara'da gerçekleşen büyük bir etkinlik sonrası kaybolan **Podo**'nun izini sürmek için geliştirilmiş, yüksek teknolojili bir dedektiflik ve istihbarat analiz platformu.
 
-![Dashboard Preview](https://via.placeholder.com/1200x600/1e293b/ffffff?text=Ankara+Intelligence+Dashboard+Interface)
-
 ## 📋 Proje Hakkında
 
 "Missing Podo", karmaşık ve parçalı istihbarat verilerini (check-inler, saha gözlemleri, mesaj kayıtları ve kişisel notlar) anlamlı birer kanıta dönüştürmek için tasarlanmıştır. Sistem, birden fazla kaynaktan gelen veriyi harmanlar, şüpheliler arasındaki sosyal ağı haritalandırır ve şahsın son görüldüğü noktaları kronolojik olarak takip eder.
@@ -42,7 +40,7 @@ Projeyi yerel ortamınızda çalıştırmak için şu adımları izleyin:
 
 1.  **Depoyu Klonlayın:**
     ```bash
-    git clone [repo-url]
+    git clone https://github.com/ethemdemirkaya/2026-frontend-challenge-ankara.git
     cd missing-podo
     ```
 

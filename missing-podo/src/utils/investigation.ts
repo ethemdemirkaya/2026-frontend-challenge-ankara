@@ -181,3 +181,27 @@ export const processAllData = (data: any, mergePairs: Record<string, string> = {
     duplicates: duplicateIdPairs
   };
 };
+
+export const calculateInvestigationStats = (people: PersonRecord[], events: TimelineEvent[]) => {
+  if (people.length === 0 || events.length === 0) return { confidenceScore: 0, sightingCount: 0, hotLocation: null };
+
+  const totalEvents = events.length;
+  const sortedPeople = [...people].sort((a, b) => b.events.length - a.events.length);
+  const primeSuspect = sortedPeople[0];
+
+  const sightingCount = events.filter(e => e.type === 'sighting').length;
+
+  const locationFreq: Record<string, number> = {};
+  events.forEach(e => { if (e.location) locationFreq[e.location] = (locationFreq[e.location] || 0) + 1; });
+  const hotLocation = Object.entries(locationFreq).sort((a,b) => b[1] - a[1])[0];
+
+  const suspectRatio = primeSuspect ? (primeSuspect.events.length / totalEvents) * 100 : 0;
+  // Use the same formula as in InvestigationReport: Math.min(95, Math.round(45 + suspectRatio * 0.8 + (sightingCount > 0 ? 12 : 0) + (hotLocation ? 8 : 0)))
+  const confidenceScore = Math.min(95, Math.round(45 + suspectRatio * 0.8 + (sightingCount > 0 ? 12 : 0) + (hotLocation ? 8 : 0)));
+
+  return {
+    confidenceScore,
+    sightingCount,
+    hotLocation
+  };
+};

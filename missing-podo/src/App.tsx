@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { fetchFormData } from "./services/api";
 import { FORM_IDS } from "./config";
-import { processAllData, type PersonRecord, type TimelineEvent } from "./utils/investigation";
+import { processAllData, calculateInvestigationStats, type PersonRecord, type TimelineEvent } from "./utils/investigation";
 import { getAnkaraRegions, isPointInGeoJsonPolygon } from "./utils/regions";
 import { getCoordsFromEvent } from "./utils/locations";
 
@@ -31,6 +31,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
   const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
+  const [triggerSearch, setTriggerSearch] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -132,15 +133,33 @@ function App() {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </label>
           </div>
-          <div className="flex-1 font-bold uppercase tracking-widest text-sm">
+          <div className="flex-1 font-bold uppercase tracking-widest text-sm flex items-center gap-4">
             The Ankara Case
+            <button 
+              onClick={() => setTriggerSearch(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-1 bg-neutral-focus hover:bg-neutral-focus/80 rounded-lg border border-base-content/10 transition-colors cursor-pointer group"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <span className="text-[10px] opacity-60 group-hover:opacity-90">Akıllı Arama</span>
+              <kbd className="kbd kbd-xs bg-base-300 border-none opacity-40">Ctrl K</kbd>
+            </button>
+          </div>
+          <div className="flex-none md:hidden">
+             <button onClick={() => setTriggerSearch(true)} className="btn btn-ghost btn-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+             </button>
           </div>
         </div>
 
         <StatsHeader 
           totalEvents={processed?.timeline.length || 0} 
           totalPeople={processed?.people.length || 0} 
-          totalSightings={data?.sightings?.length || 0} 
+          totalSightings={processed?.timeline.filter(e => e.type === 'sighting').length || 0} 
+          confidenceScore={processed ? calculateInvestigationStats(processed.people, processed.timeline).confidenceScore : 0}
         />
 
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-16">
@@ -199,6 +218,8 @@ function App() {
         </div>
         <SpotlightSearch 
            people={processed?.people || []} 
+           externalOpen={triggerSearch}
+           setExternalOpen={setTriggerSearch}
            onSelect={(id) => {
              setSelectedPersonId(id);
              document.getElementById('investigation-drawer')?.click();
@@ -216,6 +237,7 @@ function App() {
              document.getElementById('investigation-drawer')?.click();
           }} 
           onSearch={setSearchTerm} 
+          onSpotlight={() => setTriggerSearch(true)}
         />
       </div>
     </div>
