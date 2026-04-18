@@ -24,10 +24,15 @@ Ankara'da gerçekleşen büyük bir etkinlik sonrası kaybolan **Podo**'nun izin
 
 Şüpheliler arasındaki gizli bağları, iletişim trafiğini ve ortak lokasyonları fizik tabanlı bir grafikte analiz etme.
 
-### 4. 📊 İstihbarat Raporlama (Nihai Rapor)
-
+### 4. 📊 İstihbarat Raporlama & Resmi Çıktı
 - **Otomatik Güven Skoru:** Verilerin tutarlılığına göre vaka çözülme olasılığı hesaplaması.
-- **Kişiselleştirilmiş Karar:** Dedektiflerinkendi notlarını ekleyebileceği ve sistem çıkarımlarıyla karşılaştırabileceği final modülü.
+- **Profesyonel PDF Rapor:** İğnelenen kanıtları "Tutanak" formatında, resmi antetli ve imzalı bir PDF dosyasına dönüştürme.
+
+### 5. ⚠️ Çelişki Uyarı Sistemi (Conflict Engine)
+Şüphelilerin Ankara içerisindeki hareketlerini lojistik olarak denetleme. İmkansız hız ve mesafe atlamalarını otomatik tespit ederek **ANOMALİ** uyarısı oluşturma.
+
+### 6. 📌 Kanıt Panosu (Evidence Board)
+Soruşturma sırasında tespit edilen kritik mesaj ve konumları iğneleyerek (Pin) biriktirme ve organize etme imkanı.
 
 ## 🛠️ Teknoloji Yığını
 

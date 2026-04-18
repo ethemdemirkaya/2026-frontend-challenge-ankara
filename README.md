@@ -11,31 +11,49 @@ Ankara'da gerçekleşen büyük bir etkinlik sonrası kaybolan **Podo**'nun izin
 ### 1. 🔍 Gelişmiş "Spotlight" Araması (Ctrl+K)
 
 - **Akıllı Filtreleme:** Olay türüne (Mesaj, Görülme, Check-in, İhbar) göre anında daraltma.
+
 - **Aciliyet Analizi:** Yüksek öncelikli (Urgency: High) kayıtları anında tespit etme.
+
 - **Ağırlıklı Sıralama:** İsim, konum ve içerik eşleşmelerine göre skorlanmış sonuçlar.
 
 ### 2. 🗺️ İnteraktif Saha Operasyon Haritası
 
 - **Dinamik Rota Takibi:** Hedef şahsın ve şüphelilerin zaman içindeki hareketlerini kesikli çizgilerle görselleştirme.
+
 - **Bölgesel GeoJSON Filtresi:** Ankara'nın ilçelerine tıklayarak o bölgedeki tüm hareketliliği izole etme.
+
 - **Sosyal Bağlantı Katmanı:** Harita üzerinde şüphelilerin Podo ile kesiştiği "sıcak noktaları" görselleştirme.
 
 ### 3. 🕸️ Kapsamlı Ağ Analizi (Force Graph)
 
 Şüpheliler arasındaki gizli bağları, iletişim trafiğini ve ortak lokasyonları fizik tabanlı bir grafikte analiz etme.
 
-### 4. 📊 İstihbarat Raporlama (Nihai Rapor)
+### 4. 📊 İstihbarat Raporlama & Resmi Çıktı
 
 - **Otomatik Güven Skoru:** Verilerin tutarlılığına göre vaka çözülme olasılığı hesaplaması.
-- **Kişiselleştirilmiş Karar:** Dedektiflerinkendi notlarını ekleyebileceği ve sistem çıkarımlarıyla karşılaştırabileceği final modülü.
+
+- **Profesyonel PDF Rapor:** İğnelenen kanıtları "Tutanak" formatında, resmi antetli ve imzalı bir PDF dosyasına dönüştürme.
+
+### 5. ⚠️ Çelişki Uyarı Sistemi (Conflict Engine)
+
+Şüphelilerin Ankara içerisindeki hareketlerini lojistik olarak denetleme. İmkansız hız ve mesafe atlamalarını otomatik tespit ederek **ANOMALİ** uyarısı oluşturma.
+
+### 6. 📌 Kanıt Panosu (Evidence Board)
+
+Soruşturma sırasında tespit edilen kritik mesaj ve konumları iğneleyerek (Pin) biriktirme ve organize etme imkanı.
 
 ## 🛠️ Teknoloji Yığını
 
 - **Frontend:** React, TypeScript, Tailwind CSS 4.
+
 - **UI Bileşenleri:** DaisyUI (Modern & Dark Dashboard teması).
+
 - **Harita:** React-Leaflet & OpenStreetMap.
+
 - **Görselleştirme:** React Force Graph 2D (Network Analysis).
+
 - **İkonlar:** Lucide React (Profesyonel istihbarat stili).
+
 - **Veri İşleme:** Jotform API & Custom Levenshtein Duplicate Detection.
 
 ## 📥 Kurulum
@@ -46,6 +64,7 @@ Projeyi yerel ortamınızda çalıştırmak için şu adımları izleyin:
 
 ```bash
 git clone https://github.com/ethemdemirkaya/2026-frontend-challenge-ankara.git
+
 cd missing-podo
 ```
 
@@ -53,7 +72,9 @@ cd missing-podo
 
 ```bash
 npm install
+
 # veya
+
 yarn install
 ```
 
@@ -70,9 +91,13 @@ npm run dev
 Dashboard, Jotform API üzerinden sağlanan 5 farklı veri kaynağını işlemektedir:
 
 - **Checkins:** GPS koordinatlı konum bildirimleri.
+
 - **Messages:** Şahıslar arası iletişim ve aciliyet durumları.
+
 - **Sightings:** Üçüncü şahıslar tarafından bildirilen fiziksel görülme vakaları.
+
 - **Personal Notes:** Dedektif notları ve isim analizleri.
+
 - **Tips:** Anonim ihbarlar.
 
 ## 🛡️ Güvenlik ve Gizlilik
