@@ -10,14 +10,14 @@ import { ProfileCard } from "./components/ProfileCard";
 import { NetworkPanel } from "./components/NetworkPanel";
 import { MapView } from "./components/MapView";
 import { TimelineView } from "./components/TimelineView";
-import { OverviewBoard } from "./components/OverviewBoard"; // YENİ BİLEŞEN
+import { OverviewBoard } from "./components/OverviewBoard";
+import { Footer } from "./components/Footer";
 
 function App() {
   const [data, setData] = useState<any>(null);
   const [processed, setProcessed] = useState<{people: PersonRecord[], timeline: TimelineEvent[]} | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // selectedPersonId başlangıçta 'null' olarak ayarlandı, böylece direkt Rapor Özeti açılır.
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -61,14 +61,10 @@ function App() {
   );
 
   return (
-    // DRAWER: Mobilde açılır menü, masaüstünde sabit sol menü (lg:drawer-open)
     <div className="drawer lg:drawer-open h-screen bg-base-300 font-sans text-sm">
       <input id="investigation-drawer" type="checkbox" className="drawer-toggle" />
       
-      {/* ANA İÇERİK ALANI */}
-      <div className="drawer-content flex flex-col h-screen overflow-hidden">
-        
-        {/* MOBİL İÇİN ÜST NAVBAR */}
+      <div className="drawer-content flex flex-col h-screen overflow-hidden relative">
         <div className="w-full navbar bg-neutral text-neutral-content lg:hidden shadow-md">
           <div className="flex-none">
             <label htmlFor="investigation-drawer" aria-label="open sidebar" className="btn btn-square btn-ghost">
@@ -80,21 +76,16 @@ function App() {
           </div>
         </div>
 
-        {/* İSTATİSTİK BAR */}
         <StatsHeader 
           totalEvents={processed?.timeline.length || 0} 
           totalPeople={processed?.people.length || 0} 
           totalSightings={data?.sightings?.length || 0} 
         />
 
-        {/* DETAY VEYA ÖZET SAYFASI */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-8">
-          
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-16">
           {selectedPerson === null ? (
-            // HİÇBİR ŞAHIS SEÇİLİ DEĞİLSE ÖZETİ GÖSTER
-            <OverviewBoard totalEvents={processed?.timeline.length || 0} allEvents={processed?.timeline || []} />
+            <OverviewBoard totalEvents={processed?.timeline.length || 0} allEvents={processed?.timeline || []} onPinClick={(id) => setSelectedPersonId(id)} />
           ) : (
-            // ŞAHIS SEÇİLİYSE PROFİLİ GÖSTER
             <div className="max-w-5xl mx-auto space-y-6 lg:space-y-8 animate-fade-in">
               <ProfileCard person={selectedPerson} />
               
@@ -104,24 +95,28 @@ function App() {
                 </div>
 
                 <div className="lg:col-span-2 space-y-6 lg:space-y-8">
-                  <div className="bg-base-100 p-4 lg:p-6 shadow-sm border border-base-content/10">
-                    <h3 className="font-bold mb-4 uppercase tracking-widest border-l-4 border-primary pl-4">Saha Operasyon Haritası</h3>
-                    <MapView events={selectedPerson.events} />
+                  <div className="card bg-base-100 shadow-xl rounded-2xl border border-base-content/10">
+                    <div className="card-body p-4 lg:p-6">
+                      <h3 className="font-bold mb-4 uppercase tracking-widest border-l-4 border-primary pl-4">Saha Operasyon Haritası</h3>
+                      <MapView events={selectedPerson.events} onPinClick={(id) => setSelectedPersonId(id)} />
+                    </div>
                   </div>
 
-                  <div className="bg-base-100 p-4 lg:p-6 shadow-sm border border-base-content/10">
-                    <h3 className="font-bold mb-6 lg:mb-8 uppercase tracking-widest border-l-4 border-primary pl-4">Zaman Çizelgesi & Faaliyet Günlüğü</h3>
-                    <TimelineView person={selectedPerson} allPeople={processed?.people || []} />
+                  <div className="card bg-base-100 shadow-xl rounded-2xl border border-base-content/10">
+                    <div className="card-body p-4 lg:p-6">
+                      <h3 className="font-bold mb-6 lg:mb-8 uppercase tracking-widest border-l-4 border-primary pl-4">Zaman Çizelgesi & Faaliyet Günlüğü</h3>
+                      <TimelineView person={selectedPerson} allPeople={processed?.people || []} />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
-
         </div>
+        
+        <Footer />
       </div>
 
-      {/* YAN MENÜ (SIDEBAR) */}
       <div className="drawer-side z-50">
         <label htmlFor="investigation-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
         <Sidebar 
@@ -129,7 +124,6 @@ function App() {
           selectedId={selectedPersonId} 
           onSelect={(id) => {
              setSelectedPersonId(id);
-             // Mobilde seçim yapınca menüyü otomatik kapatmak için:
              document.getElementById('investigation-drawer')?.click();
           }} 
           onSearch={setSearchTerm} 

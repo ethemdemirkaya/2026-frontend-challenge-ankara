@@ -48,8 +48,8 @@ export const StatsHeader = ({ totalEvents, totalPeople, totalSightings }: StatsH
             <div className="stats shadow bg-base-100 rounded-none border border-base-content/5 hover:border-primary transition-colors">
               <div className="stat p-3">
                 <div className="stat-title text-[10px] uppercase font-bold opacity-70">Veri Güvenilirliği</div>
-                <div className="stat-value text-xl">%84</div>
-                <div className="stat-desc mt-1">DaisyUI Bonus İşlemleri</div>
+                <div className="stat-value text-xl tooltip tooltip-bottom" data-tip="Hesaplanan Doğruluk Payı">%84</div>
+                <div className="stat-desc mt-1">Tahmini Doğruluk Oranı</div>
               </div>
             </div>
           </div>
