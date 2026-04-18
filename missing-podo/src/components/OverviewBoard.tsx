@@ -70,6 +70,7 @@ export const OverviewBoard = ({ totalEvents, allEvents, people, onPinClick, sele
             showRegions={true} 
             selectedRegionId={selectedRegionId} 
             onRegionClick={onRegionClick} 
+            useFlyTo={true}
           />
         </div>
       </div>

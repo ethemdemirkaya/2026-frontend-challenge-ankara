@@ -1,18 +1,17 @@
 import { type TimelineEvent } from "../utils/investigation";
 import { getCoordsFromEvent } from "../utils/locations";
 import { getAnkaraRegions } from "../utils/regions";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON, Polyline, useMap, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
 
-// Color-coded pin icons by role — dark, high-contrast colors
+// Pin İkonları (Değişiklik yapılmadı)
 const createPinIcon = (role: 'podo' | 'related' | 'other', isHovered: boolean = false) => {
-  // Color hex values (dark mode safe, visible on any map tile)
   const colorMap = {
-    podo:    { base: '#dc2626', glow: 'rgba(220,38,38,0.7)' },  // deep red
-    related: { base: '#b45309', glow: 'rgba(180,83,9,0.6)' },   // deep amber/brown
-    other:   { base: '#334155', glow: 'rgba(51,65,85,0.5)' },   // dark slate
+    podo: { base: '#dc2626', glow: 'rgba(220,38,38,0.7)' },
+    related: { base: '#b45309', glow: 'rgba(180,83,9,0.6)' },
+    other: { base: '#334155', glow: 'rgba(51,65,85,0.5)' },
   };
   const col = colorMap[role];
   const hoverScale = isHovered ? 'transform: scale(1.8) translateY(-6px);' : '';
@@ -52,22 +51,45 @@ const MapScrollControls = () => {
   ) : null;
 };
 
-// Auto-fits map bounds to the visible pins whenever events change
-const FitBounds = ({ coords }: { coords: [number, number][] }) => {
+// YENİ: Tek bir merkezden yönetilen Sinematik Zoom kontrolcüsü
+const CinematicFitBounds = ({ coords, useFlyTo }: { coords: [number, number][], useFlyTo?: boolean }) => {
   const map = useMap();
+
   useEffect(() => {
     if (coords.length === 0) return;
-    if (coords.length === 1) {
-      map.setView(coords[0], 14, { animate: true });
+
+    const bounds = L.latLngBounds(coords.map(c => L.latLng(c[0], c[1])));
+
+    if (useFlyTo) {
+      // 1. Aşama: Başlangıç (Ankara'nın genelini ve ilçeleri görecek kadar uzak - Zoom: 9)
+      map.setView([39.9208, 32.8541], 9, { animate: false });
+
+      // 2. Aşama: Hedefe Uçuş (1.2 saniye bekle, sonra tam pinlerin ortasına uç)
+      const timer = setTimeout(() => {
+        if (coords.length === 1) {
+          // Tek pin varsa daha da yakına gir (Zoom: 16)
+          map.flyTo(coords[0], 16, { duration: 3.5, easeLinearity: 0.1 });
+        } else {
+          // Çok pin varsa hepsini kapsayacak şekilde derin yakınlaştırma yap (maxZoom: 16)
+          map.flyToBounds(bounds, { padding: [80, 80], duration: 3.5, easeLinearity: 0.1, maxZoom: 16 });
+        }
+      }, 1200);
+
+      return () => clearTimeout(timer);
     } else {
-      const bounds = L.latLngBounds(coords.map(c => L.latLng(c[0], c[1])));
-      map.fitBounds(bounds, { padding: [60, 60], animate: true, maxZoom: 15 });
+      // Animasyon istenmiyorsa veya filtreleme sırasında anlık geçişler için
+      if (coords.length === 1) {
+        map.setView(coords[0], 16, { animate: true });
+      } else {
+        map.fitBounds(bounds, { padding: [60, 60], animate: true, maxZoom: 16 });
+      }
     }
-  }, [JSON.stringify(coords)]);
+  }, [JSON.stringify(coords), useFlyTo, map]);
+
   return null;
 };
 
-// Legend overlay for pin types
+// MapLegend (Değişiklik yapılmadı)
 const MapLegend = () => (
   <div className="absolute bottom-4 right-4 z-[500] bg-base-100/90 backdrop-blur-md rounded-xl p-3 shadow-xl border border-base-content/10 text-xs space-y-1.5 pointer-events-none">
     <p className="font-bold uppercase tracking-widest opacity-50 text-[9px] mb-2">Pin Açıklaması</p>
@@ -96,21 +118,20 @@ const MapLegend = () => (
   </div>
 );
 
-export const MapView = ({ 
-  events, onPinClick, hoveredEventId, showRegions, selectedRegionId, onRegionClick 
-}: { 
+export const MapView = ({
+  events, onPinClick, hoveredEventId, showRegions, selectedRegionId, onRegionClick, useFlyTo
+}: {
   events: TimelineEvent[], onPinClick?: (event: TimelineEvent) => void,
   hoveredEventId?: string | null, showRegions?: boolean,
-  selectedRegionId?: string | null, onRegionClick?: (id: string | null) => void 
+  selectedRegionId?: string | null, onRegionClick?: (id: string | null) => void,
+  useFlyTo?: boolean
 }) => {
   const centerPosition: [number, number] = [39.9208, 32.8541];
 
-  // Collect valid coords for bounds fitting
   const allValidCoords: [number, number][] = events
     .filter(e => e.location || e.coordinates)
     .map(e => getCoordsFromEvent(e.location, e.coordinates));
 
-  // Build route: ALL events sorted chronologically
   const sortedForRoute = [...events]
     .filter(e => e.location || e.coordinates)
     .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
@@ -121,15 +142,18 @@ export const MapView = ({
 
   return (
     <div className="relative w-full aspect-video border border-base-content/10 overflow-hidden rounded-2xl shadow-inner z-0">
-      <MapContainer center={centerPosition} zoom={10} className="w-full h-full" scrollWheelZoom={false}>
+      {/* Zoom parametresini başlangıç için 9'a çektim, bu sayede ilçeler daha rahat görünür */}
+      <MapContainer center={centerPosition} zoom={9} className="w-full h-full" scrollWheelZoom={false}>
+
+        {/* ESKİ MapZoomEffect ve FitBounds yerine tek bir Cinematic kontrolcü eklendi */}
+        <CinematicFitBounds coords={allValidCoords} useFlyTo={useFlyTo} />
         <MapScrollControls />
-        <FitBounds coords={allValidCoords} />
+
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
 
-        {/* District regions with visible name labels */}
         {showRegions && getAnkaraRegions().map(region => {
           const isSelected = selectedRegionId === region.id;
           return (
@@ -146,7 +170,6 @@ export const MapView = ({
                 click: () => onRegionClick && onRegionClick(isSelected ? null : region.id)
               }}
               onEachFeature={(_feature: any, layer: any) => {
-                // Show district name as a permanent tooltip on the polygon
                 if (layer.bindTooltip) {
                   layer.bindTooltip(region.name, {
                     permanent: true,
@@ -161,7 +184,6 @@ export const MapView = ({
           );
         })}
 
-        {/* Route polyline — full chronological path of the selected person */}
         {routeCoords.length > 1 && (
           <Polyline
             positions={routeCoords}
@@ -176,33 +198,31 @@ export const MapView = ({
           />
         )}
 
-        {/* Podo's Route as a faint reference if not Podo */}
         {events.some(e => e.primaryPerson !== 'podo') && (
-           <Polyline
-             positions={sortedForRoute
-               .filter(e => e.primaryPerson === 'podo' || e.relatedPerson === 'podo')
-               .map(e => getCoordsFromEvent(e.location, e.coordinates))
-             }
-             pathOptions={{
-               color: '#ef4444',
-               weight: 3,
-               dashArray: '1, 10',
-               opacity: 0.4
-             }}
-           />
+          <Polyline
+            positions={sortedForRoute
+              .filter(e => e.primaryPerson === 'podo' || e.relatedPerson === 'podo')
+              .map(e => getCoordsFromEvent(e.location, e.coordinates))
+            }
+            pathOptions={{
+              color: '#ef4444',
+              weight: 3,
+              dashArray: '1, 10',
+              opacity: 0.4
+            }}
+          />
         )}
 
-        {/* Interaction Highlights */}
         {events.map((event, index) => {
           if (!event.location && !event.coordinates) return null;
           if (!event.relatedPerson) return null;
-          
+
           const [lat, lng] = getCoordsFromEvent(event.location, event.coordinates);
           const isPodoInteraction = event.relatedPerson === 'podo' || event.primaryPerson === 'podo';
-          
+
           if (isPodoInteraction) {
             return (
-              <GeoJSON 
+              <GeoJSON
                 key={`interaction-${event.id}`}
                 data={{
                   type: 'Feature',
@@ -226,12 +246,10 @@ export const MapView = ({
           return null;
         })}
 
-        {/* Event pins */}
         {events.map((event, index) => {
           if (!event.location && !event.coordinates) return null;
           const [lat, lng] = getCoordsFromEvent(event.location, event.coordinates);
 
-          // Small jitter to separate overlapping pins at same location
           const latJitter = (index % 5) * 0.003 - 0.006;
           const lngJitter = ((index * 7) % 5) * 0.003 - 0.006;
 
@@ -262,7 +280,6 @@ export const MapView = ({
         })}
       </MapContainer>
 
-      {/* Legend overlay — bottom right */}
       <MapLegend />
     </div>
   );
