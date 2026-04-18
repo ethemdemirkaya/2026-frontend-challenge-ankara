@@ -1,7 +1,7 @@
 import { type TimelineEvent } from "../utils/investigation";
 import { getCoords } from "../utils/locations";
-import { ANKARA_REGIONS } from "../utils/regions";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polygon } from "react-leaflet";
+import { ANKARA_GEOJSON, getAnkaraRegions } from "../utils/regions";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
@@ -57,30 +57,33 @@ export const MapView = ({
 
   return (
     <div className="relative w-full aspect-video border border-base-content/10 overflow-hidden rounded-2xl shadow-inner z-0">
-      <MapContainer center={centerPosition} zoom={11} className="w-full h-full" scrollWheelZoom={false}>
+      <MapContainer center={centerPosition} zoom={10} className="w-full h-full" scrollWheelZoom={false}>
         <MapScrollControls />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
 
-        {showRegions && ANKARA_REGIONS.map(region => (
-          <Polygon 
-            key={region.id} 
-            positions={region.coordinates} 
-            pathOptions={{ 
-              color: region.color, 
-              fillColor: region.color, 
-              fillOpacity: selectedRegionId === region.id ? 0.3 : 0.05, 
-              weight: selectedRegionId === region.id ? 3 : 1 
-            }}
-            eventHandlers={{
-              click: () => onRegionClick && onRegionClick(selectedRegionId === region.id ? null : region.id)
-            }}
-          >
-            <Popup className="font-sans font-bold uppercase tracking-widest text-[10px]">{region.name} (Tıkla ve Filtrele)</Popup>
-          </Polygon>
-        ))}
+        {showRegions && getAnkaraRegions().map(region => {
+          const isSelected = selectedRegionId === region.id;
+          return (
+            <GeoJSON 
+              key={`${region.id}-${isSelected ? 'selected' : 'unselected'}`}
+              data={region.feature}
+              style={{
+                color: isSelected ? "#ff3e00" : "#3b82f6",
+                fillColor: isSelected ? "#ff3e00" : "#3b82f6",
+                fillOpacity: isSelected ? 0.3 : 0.05,
+                weight: isSelected ? 3 : 1
+              }}
+              eventHandlers={{
+                click: () => onRegionClick && onRegionClick(isSelected ? null : region.id)
+              }}
+            >
+              <Popup className="font-sans font-bold uppercase tracking-widest text-[10px]">{region.name} (Tıkla ve Filtrele)</Popup>
+            </GeoJSON>
+          );
+        })}
 
         {events.map((event, index) => {
           if (!event.location) return null;

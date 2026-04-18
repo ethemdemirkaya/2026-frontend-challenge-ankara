@@ -1,69 +1,47 @@
+import ankaraGeoJsonStr from '../datas/ankara.geojson?raw';
+
+export const ANKARA_GEOJSON = JSON.parse(ankaraGeoJsonStr);
+
 export interface RegionDef {
   id: string;
   name: string;
-  color: string;
-  coordinates: [number, number][];
+  feature: any;
 }
 
-// Ankara'nın bazı ilçeleri için basitleştirilmiş poligon koordinatları (Lat, Lng)
-export const ANKARA_REGIONS: RegionDef[] = [
-  {
-    id: "cankaya",
-    name: "Çankaya Bölgesi",
-    color: "#3b82f6", // Blue
-    coordinates: [
-      [39.930, 32.820],
-      [39.930, 32.880],
-      [39.850, 32.880],
-      [39.850, 32.820],
-    ]
-  },
-  {
-    id: "yenimahalle",
-    name: "Yenimahalle Bölgesi",
-    color: "#eab308", // Yellow
-    coordinates: [
-      [39.980, 32.740],
-      [39.980, 32.820],
-      [39.920, 32.820],
-      [39.920, 32.740],
-    ]
-  },
-  {
-    id: "altindag",
-    name: "Altındağ Bölgesi",
-    color: "#ef4444", // Red
-    coordinates: [
-      [39.980, 32.820],
-      [39.980, 32.920],
-      [39.930, 32.920],
-      [39.930, 32.820],
-    ]
-  },
-  {
-    id: "mamak",
-    name: "Mamak Bölgesi",
-    color: "#8b5cf6", // Purple
-    coordinates: [
-      [39.930, 32.880],
-      [39.930, 32.960],
-      [39.880, 32.960],
-      [39.880, 32.880],
-    ]
-  }
-];
+export const getAnkaraRegions = (): RegionDef[] => {
+  const data: any = ANKARA_GEOJSON;
+  if (!data?.features) return [];
+  return data.features.map((f: any) => ({
+    id: String(f.properties?.name || f.properties?.IlAdi1 || f.properties?.osm_id || Math.random()).toLowerCase().replace(/\s+/g, '-').replace(/ı/g, 'i').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g'),
+    name: String(f.properties?.name || f.properties?.IlAdi1 || 'Bilinmeyen Bölge'),
+    feature: f
+  }));
+};
 
-// Belirlenen bir noktanın polygon içinde olup olmadığını test eden fonksiyon (Ray-casting)
-export const isPointInPolygon = (point: [number, number], polygon: [number, number][]) => {
-  let [lat, lng] = point;
-  let isInside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    let [xi, yi] = polygon[i];
-    let [xj, yj] = polygon[j];
-    
-    let intersect = ((yi > lng) !== (yj > lng)) &&
-        (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
-    if (intersect) isInside = !isInside;
+export const isPointInGeoJsonPolygon = (point: [number, number], geometry: any) => {
+  const [lat, lng] = point;
+  
+  const checkPolygon = (rings: number[][][]) => {
+     const outerRing = rings[0];
+     let isInside = false;
+     for (let i = 0, j = outerRing.length - 1; i < outerRing.length; j = i++) {
+        // GeoJSON coordinate format is [longitude, latitude]
+        let [xi, yi] = outerRing[i]; // xi = lng, yi = lat
+        let [xj, yj] = outerRing[j];
+        
+        let intersect = ((yi > lat) !== (yj > lat)) &&
+           (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+        if (intersect) isInside = !isInside;
+     }
+     return isInside;
+  };
+
+  if (geometry.type === 'Polygon') {
+      return checkPolygon(geometry.coordinates);
+  } else if (geometry.type === 'MultiPolygon') {
+      for (const polygon of geometry.coordinates) {
+          if (checkPolygon(polygon)) return true;
+      }
   }
-  return isInside;
+  return false;
 };

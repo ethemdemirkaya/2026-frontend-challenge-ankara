@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import { fetchFormData } from "./services/api";
 import { FORM_IDS } from "./config";
 import { processAllData, type PersonRecord, type TimelineEvent } from "./utils/investigation";
-import { ANKARA_REGIONS, isPointInPolygon } from "./utils/regions";
+import { getAnkaraRegions, isPointInGeoJsonPolygon } from "./utils/regions";
+import { getCoords } from "./utils/locations";
 
 // Bileşenler
 import { Sidebar } from "./components/Sidebar";
@@ -51,17 +52,16 @@ function App() {
   const filteredPeople = useMemo(() => {
     let basePeople = processed?.people || [];
 
-    // Region Filter: Keep people who have events in the selected polygon
+    // Region Filter: Keep people who have events in the selected geojson region
     if (selectedRegionId) {
-      const region = ANKARA_REGIONS.find(r => r.id === selectedRegionId);
-      if (region) {
+      const regions = getAnkaraRegions();
+      const region = regions.find(r => r.id === selectedRegionId);
+      if (region && region.feature && region.feature.geometry) {
         basePeople = basePeople.filter(p => p.events.some(e => {
           if (!e.location) return false;
           try {
-            const parts = e.location.split(',');
-            const lat = parseFloat(parts[0]);
-            const lng = parseFloat(parts[1]);
-            return isPointInPolygon([lat, lng], region.coordinates);
+            const [lat, lng] = getCoords(e.location);
+            return isPointInGeoJsonPolygon([lat, lng], region.feature.geometry);
           } catch(err) { return false; }
         }));
       }
