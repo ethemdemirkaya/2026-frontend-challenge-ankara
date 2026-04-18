@@ -66,15 +66,20 @@ function App() {
   const filteredPeople = useMemo(() => {
     let basePeople = processed?.people || [];
 
-    // Region Filter: Keep people who have events in the selected geojson region
+    // Region Filter: Keep people who have at least one reliably-located event inside the selected region
     if (selectedRegionId) {
       const regions = getAnkaraRegions();
       const region = regions.find(r => r.id === selectedRegionId);
       if (region && region.feature && region.feature.geometry) {
+        const FALLBACK_LAT = 39.9208;
+        const FALLBACK_LNG = 32.8541;
         basePeople = basePeople.filter(p => p.events.some(e => {
           if (!e.location) return false;
           try {
             const [lat, lng] = getCoords(e.location);
+            // Skip events that resolved to the generic fallback — they cannot be placed
+            const isFallback = Math.abs(lat - FALLBACK_LAT) < 0.0001 && Math.abs(lng - FALLBACK_LNG) < 0.0001;
+            if (isFallback) return false;
             return isPointInGeoJsonPolygon([lat, lng], region.feature.geometry);
           } catch(err) { return false; }
         }));
