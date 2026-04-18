@@ -1,7 +1,7 @@
 import { type TimelineEvent } from "../utils/investigation";
 import { getCoords } from "../utils/locations";
 import { ANKARA_GEOJSON, getAnkaraRegions } from "../utils/regions";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
@@ -45,6 +45,21 @@ const MapScrollControls = () => {
   ) : null;
 };
 
+// Auto-fits map bounds to the visible pins whenever events change
+const FitBounds = ({ coords }: { coords: [number, number][] }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (coords.length === 0) return;
+    if (coords.length === 1) {
+      map.setView(coords[0], 13, { animate: true });
+    } else {
+      const bounds = L.latLngBounds(coords.map(c => L.latLng(c[0], c[1])));
+      map.fitBounds(bounds, { padding: [60, 60], animate: true, maxZoom: 14 });
+    }
+  }, [JSON.stringify(coords)]);
+  return null;
+};
+
 export const MapView = ({ 
   events, onPinClick, hoveredEventId, showRegions, selectedRegionId, onRegionClick 
 }: { 
@@ -52,13 +67,21 @@ export const MapView = ({
   hoveredEventId?: string | null, showRegions?: boolean,
   selectedRegionId?: string | null, onRegionClick?: (id: string | null) => void 
 }) => {
-  // Ankara default center
   const centerPosition: [number, number] = [39.9208, 32.8541];
+
+  // Collect valid coords for bounds fitting
+  const allValidCoords: [number, number][] = events
+    .filter(e => e.location)
+    .map((e, i) => {
+      const [lat, lng] = getCoords(e.location!);
+      return [lat + (i % 5) * 0.005 - 0.01, lng + ((i * 7) % 5) * 0.005 - 0.01] as [number, number];
+    });
 
   return (
     <div className="relative w-full aspect-video border border-base-content/10 overflow-hidden rounded-2xl shadow-inner z-0">
       <MapContainer center={centerPosition} zoom={10} className="w-full h-full" scrollWheelZoom={false}>
         <MapScrollControls />
+        <FitBounds coords={allValidCoords} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"

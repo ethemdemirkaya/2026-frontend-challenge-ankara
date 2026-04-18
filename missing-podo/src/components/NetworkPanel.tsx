@@ -17,8 +17,8 @@ export const NetworkPanel = ({ person }: { person: PersonRecord }) => {
               {Array.from(person.connections).map(c => (
                 <div key={c} className="flex items-center gap-4 bg-base-200/50 p-3 rounded-xl border border-base-content/5 hover:border-secondary transition-colors cursor-pointer group">
                   <div className="avatar placeholder">
-                    <div className="bg-secondary text-secondary-content rounded-full w-10">
-                      <span>{c.substring(0,2).toUpperCase()}</span>
+                    <div className="bg-secondary text-secondary-content rounded-full w-10 h-10 flex items-center justify-center">
+                      <span className="text-sm font-bold leading-none">{c.substring(0,2).toUpperCase()}</span>
                     </div>
                   </div>
                   <div className="flex-1">
