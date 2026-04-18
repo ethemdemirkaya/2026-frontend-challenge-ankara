@@ -5,9 +5,11 @@ interface OverviewProps {
   totalEvents: number;
   allEvents: TimelineEvent[];
   onPinClick?: (event: TimelineEvent) => void;
+  selectedRegionId?: string | null;
+  onRegionClick?: (id: string | null) => void;
 }
 
-export const OverviewBoard = ({ totalEvents, allEvents, onPinClick }: OverviewProps) => {
+export const OverviewBoard = ({ totalEvents, allEvents, onPinClick, selectedRegionId, onRegionClick }: OverviewProps) => {
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
       
@@ -21,7 +23,7 @@ export const OverviewBoard = ({ totalEvents, allEvents, onPinClick }: OverviewPr
           <p className="text-base-content/80 leading-relaxed text-justify">
             Bu sistem; dağınık haldeki {totalEvents} adet veri kaydını analiz ederek ilişkileri ortaya çıkarmak, Podo'nun son rotasını haritalandırmak ve iletişim ağındaki en şüpheli kişileri tespit etmek amacıyla oluşturulmuştur. 
             <br/><br/>
-            <strong>Görev Talimatı:</strong> Sol taraftaki istihbarat havuzundan veya aşağıdaki <strong className="text-primary">Haritadan bir pine tıklayarak</strong> soruşturmayı derinleştirin.
+            <strong>Görev Talimatı:</strong> Sol taraftaki istihbarat havuzundan veya aşağıdaki <strong className="text-primary">Haritadan bir pine/bölgeye tıklayarak</strong> aramayı sınırlandırıp soruşturmayı derinleştirin.
           </p>
         </div>
       </div>
@@ -29,9 +31,18 @@ export const OverviewBoard = ({ totalEvents, allEvents, onPinClick }: OverviewPr
       {/* Tüm Ankara Haritası (Genel Görünüm) */}
       <div className="card bg-base-100 shadow-xl rounded-3xl border border-base-content/10">
         <div className="card-body p-6">
-          <h3 className="font-bold mb-4 uppercase tracking-widest border-l-4 border-primary pl-4">Genel Saha Hareketliliği</h3>
-          <p className="text-xs opacity-60 mb-4">Aşağıdaki harita, veritabanımızdaki tüm şahısların Ankara içerisindeki son bilinen konumlarını göstermektedir. Etkileşime geçmek için pinlere tıklayabilirsiniz.</p>
-          <MapView events={allEvents} onPinClick={onPinClick} />
+          <h3 className="font-bold mb-4 uppercase tracking-widest border-l-4 border-primary pl-4 flex items-center justify-between">
+            Genel Saha Hareketliliği
+            {selectedRegionId && <span className="badge badge-primary badge-outline text-[10px] animate-pulse">Bölgesel Filtre Aktif</span>}
+          </h3>
+          <p className="text-xs opacity-60 mb-4">Haritadaki renkli poligon bölgelerine tıklayarak aramayı daraltabilir veya doğrudan pinlere basarak şüphelileri inceleyebilirsiniz.</p>
+          <MapView 
+            events={allEvents} 
+            onPinClick={onPinClick} 
+            showRegions={true} 
+            selectedRegionId={selectedRegionId} 
+            onRegionClick={onRegionClick} 
+          />
         </div>
       </div>
     </div>

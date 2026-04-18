@@ -100,6 +100,23 @@ export const processAllData = (data: any) => {
     allEvents.push(event);
   });
 
+  // 5. Tips (İsimsiz İhbarlar)
+  data.tips?.forEach((item: any) => {
+    if(!item.targetPerson) return;
+    const target = getOrAddPerson(item.targetPerson);
+    const event: TimelineEvent = { 
+      id: item.id, type: "tip", dateObj: parseCustomDate(item.timestamp), 
+      displayTime: item.timestamp, primaryPerson: target.id, location: item.location, 
+      content: item.tipDetail, reliability: item.reliability, rawData: item 
+    };
+    target.events.push(event);
+    allEvents.push(event);
+    
+    // İhbar edilen kişinin şüphesini güvenilirliğe göre artır
+    if(item.reliability === 'Yüksek') target.suspicionScore += 10;
+    else if(item.reliability === 'Orta') target.suspicionScore += 5;
+  });
+
   // Şüphe Puanı Hesaplama (Basit Algoritma)
   peopleMap.forEach(person => {
     if (person.id === 'podo') return;

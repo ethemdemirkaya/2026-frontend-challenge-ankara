@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { fetchFormData } from "./services/api";
 import { FORM_IDS } from "./config";
 import { processAllData, type PersonRecord, type TimelineEvent } from "./utils/investigation";
+import { ANKARA_REGIONS, isPointInPolygon } from "./utils/regions";
 
 // Bileşenler
 import { Sidebar } from "./components/Sidebar";
@@ -20,6 +21,8 @@ function App() {
   
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+  const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -46,8 +49,37 @@ function App() {
   }, []);
 
   const filteredPeople = useMemo(() => {
-    return processed?.people.filter(p => p.displayName.toLowerCase().includes(searchTerm.toLowerCase())) || [];
-  }, [processed, searchTerm]);
+    let basePeople = processed?.people || [];
+
+    // Region Filter: Keep people who have events in the selected polygon
+    if (selectedRegionId) {
+      const region = ANKARA_REGIONS.find(r => r.id === selectedRegionId);
+      if (region) {
+        basePeople = basePeople.filter(p => p.events.some(e => {
+          if (!e.location) return false;
+          try {
+            const parts = e.location.split(',');
+            const lat = parseFloat(parts[0]);
+            const lng = parseFloat(parts[1]);
+            return isPointInPolygon([lat, lng], region.coordinates);
+          } catch(err) { return false; }
+        }));
+      }
+    }
+
+    // Text Search Filter: Name, Location, Content, EventType
+    const query = searchTerm.toLowerCase();
+    if (!query) return basePeople;
+
+    return basePeople.filter(p => {
+      if (p.displayName.toLowerCase().includes(query)) return true;
+      return p.events.some(e => 
+         e.location?.toLowerCase().includes(query) ||
+         e.content?.toLowerCase().includes(query) ||
+         e.type.toLowerCase().includes(query)
+      );
+    });
+  }, [processed, searchTerm, selectedRegionId]);
 
   const selectedPerson = useMemo(() => {
     return processed?.people.find(p => p.id === selectedPersonId) || null;
@@ -93,7 +125,13 @@ function App() {
 
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-16">
           {selectedPerson === null ? (
-            <OverviewBoard totalEvents={processed?.timeline.length || 0} allEvents={processed?.timeline || []} onPinClick={handlePinClick} />
+            <OverviewBoard 
+               totalEvents={processed?.timeline.length || 0} 
+               allEvents={processed?.timeline || []} 
+               onPinClick={handlePinClick} 
+               selectedRegionId={selectedRegionId}
+               onRegionClick={setSelectedRegionId}
+            />
           ) : (
             <div className="max-w-5xl mx-auto space-y-6 lg:space-y-8 animate-fade-in">
               <ProfileCard person={selectedPerson} />
@@ -107,14 +145,23 @@ function App() {
                   <div className="card bg-base-100 shadow-xl rounded-2xl border border-base-content/10">
                     <div className="card-body p-4 lg:p-6">
                       <h3 className="font-bold mb-4 uppercase tracking-widest border-l-4 border-primary pl-4">Saha Operasyon Haritası</h3>
-                      <MapView events={selectedPerson.events} onPinClick={handlePinClick} />
+                      <MapView 
+                        events={selectedPerson.events} 
+                        onPinClick={handlePinClick} 
+                        hoveredEventId={hoveredEventId}
+                      />
                     </div>
                   </div>
 
                   <div className="card bg-base-100 shadow-xl rounded-2xl border border-base-content/10">
                     <div className="card-body p-4 lg:p-6">
                       <h3 className="font-bold mb-6 lg:mb-8 uppercase tracking-widest border-l-4 border-primary pl-4">Zaman Çizelgesi & Faaliyet Günlüğü</h3>
-                      <TimelineView person={selectedPerson} allPeople={processed?.people || []} />
+                      <TimelineView 
+                        person={selectedPerson} 
+                        allPeople={processed?.people || []} 
+                        hoveredEventId={hoveredEventId}
+                        onEventHover={setHoveredEventId}
+                      />
                     </div>
                   </div>
                 </div>
