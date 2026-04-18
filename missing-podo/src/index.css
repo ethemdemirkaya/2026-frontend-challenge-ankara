@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* DaisyUI'ın karanlık modunu kapatmak istersen kök elemente ekleyebilirsin: */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+}
