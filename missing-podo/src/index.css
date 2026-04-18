@@ -7,3 +7,77 @@
     color-scheme: light;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-family: serif !important;
+  }
+
+  /* Hide everything and only show the main content */
+  .drawer-side, .navbar, .footer, .btn, .stats-header-controls, .print:hidden, .no-print, [class*="fixed"] {
+    display: none !important;
+  }
+
+  .drawer-content {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    break-inside: avoid;
+    margin-bottom: 2rem;
+  }
+
+  .timeline {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .timeline-middle {
+    display: none !important;
+  }
+
+  .timeline-end {
+    border-left: 2px solid #000 !important;
+    padding-left: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  h1, h2, h3 {
+    text-transform: uppercase !important;
+    border-bottom: 2px solid #000 !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Intelligence Report specific print header */
+  .print-only-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 4px double #000;
+    padding-bottom: 1rem;
+  }
+
+  .print-only-header h1 {
+    font-size: 24pt;
+    font-weight: black;
+    margin-bottom: 0;
+    border-bottom: none !important;
+  }
+}
+
+.print-only-header {
+  display: none;
+}

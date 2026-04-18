@@ -16,6 +16,8 @@ import { OverviewBoard } from "./components/OverviewBoard";
 import { Footer } from "./components/Footer";
 import { InvestigationReport } from "./components/InvestigationReport";
 import { SpotlightSearch } from "./components/SpotlightSearch";
+import { EvidenceBoard } from "./components/EvidenceBoard";
+import { Pin } from "lucide-react";
 
 function App() {
   const [data, setData] = useState<any>(null);
@@ -32,6 +34,16 @@ function App() {
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
   const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
   const [triggerSearch, setTriggerSearch] = useState(false);
+  const [pinnedEvents, setPinnedEvents] = useState<TimelineEvent[]>([]);
+  const [isEvidenceBoardOpen, setIsEvidenceBoardOpen] = useState(false);
+
+  const togglePin = (event: TimelineEvent) => {
+    setPinnedEvents(prev => 
+      prev.find(e => e.id === event.id) 
+        ? prev.filter(e => e.id !== event.id) 
+        : [...prev, event]
+    );
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -127,7 +139,13 @@ function App() {
       <input id="investigation-drawer" type="checkbox" className="drawer-toggle" />
       
       <div className="drawer-content flex flex-col h-screen overflow-hidden relative">
-        <div className="w-full navbar bg-neutral text-neutral-content lg:hidden shadow-md">
+        <div className="print-only-header">
+           <p className="text-right text-[10px] uppercase opacity-50 mb-4">Gizli / Top Secret - Ankara Emniyet Müdürlüğü</p>
+           <h1 className="text-2xl font-black mb-0 border-b-4 border-double border-black pb-2">VAKA DOSYASI: KAYIP PODO (#2026-MISSING)</h1>
+           <p className="text-sm italic mt-2 opacity-70">Oluşturulma Tarihi: {new Date().toLocaleDateString('tr-TR')} - Ankara İstihbarat Şube</p>
+        </div>
+
+        <div className="w-full navbar bg-neutral text-neutral-content lg:hidden shadow-md print:hidden">
           <div className="flex-none">
             <label htmlFor="investigation-drawer" aria-label="open sidebar" className="btn btn-square btn-ghost">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -162,7 +180,7 @@ function App() {
           confidenceScore={processed ? calculateInvestigationStats(processed.people, processed.timeline).confidenceScore : 0}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-16">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-16 print:p-0">
           {selectedPerson === null ? (
             <OverviewBoard 
                totalEvents={processed?.timeline.length || 0} 
@@ -203,6 +221,8 @@ function App() {
                         allPeople={processed?.people || []} 
                         hoveredEventId={hoveredEventId}
                         onEventHover={setHoveredEventId}
+                        pinnedIds={pinnedEvents.map(e => e.id)}
+                        onPin={togglePin}
                       />
                     </div>
                   </div>
@@ -213,9 +233,27 @@ function App() {
         </div>
         
         <Footer />
-        <div className="fixed bottom-6 right-6 z-[100] animate-bounce hover:animate-none">
+        
+        <div className="fixed bottom-24 right-6 z-[100] print:hidden">
+            <button 
+              onClick={() => setIsEvidenceBoardOpen(true)}
+              className="btn btn-circle btn-primary shadow-2xl group flex flex-col gap-0 h-16 w-16"
+            >
+              <Pin className={`w-6 h-6 ${pinnedEvents.length > 0 ? 'fill-current animate-bounce' : ''}`} />
+              <span className="text-[10px] font-bold">{pinnedEvents.length}</span>
+            </button>
+        </div>
+
+        <div className="fixed bottom-6 right-6 z-[100] animate-bounce hover:animate-none print:hidden">
            <InvestigationReport processed={processed} />
         </div>
+        
+        <EvidenceBoard 
+          items={pinnedEvents} 
+          isOpen={isEvidenceBoardOpen} 
+          onClose={() => setIsEvidenceBoardOpen(false)}
+          onRemove={togglePin}
+        />
         <SpotlightSearch 
            people={processed?.people || []} 
            externalOpen={triggerSearch}
