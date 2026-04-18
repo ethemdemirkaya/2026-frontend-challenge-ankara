@@ -161,21 +161,70 @@ export const MapView = ({
           );
         })}
 
-        {/* Route polyline — full chronological path */}
+        {/* Route polyline — full chronological path of the selected person */}
         {routeCoords.length > 1 && (
           <Polyline
             positions={routeCoords}
             pathOptions={{
-              color: '#ef4444',
-              weight: 3,
-              dashArray: '10, 12',
-              dashOffset: '0',
-              opacity: 0.85,
+              color: '#3b82f6',
+              weight: 2,
+              dashArray: '5, 8',
+              opacity: 0.6,
               lineCap: 'round',
               lineJoin: 'round',
             }}
           />
         )}
+
+        {/* Podo's Route as a faint reference if not Podo */}
+        {events.some(e => e.primaryPerson !== 'podo') && (
+           <Polyline
+             positions={sortedForRoute
+               .filter(e => e.primaryPerson === 'podo' || e.relatedPerson === 'podo')
+               .map(e => getCoordsFromEvent(e.location, e.coordinates))
+             }
+             pathOptions={{
+               color: '#ef4444',
+               weight: 3,
+               dashArray: '1, 10',
+               opacity: 0.4
+             }}
+           />
+        )}
+
+        {/* Interaction Highlights */}
+        {events.map((event, index) => {
+          if (!event.location && !event.coordinates) return null;
+          if (!event.relatedPerson) return null;
+          
+          const [lat, lng] = getCoordsFromEvent(event.location, event.coordinates);
+          const isPodoInteraction = event.relatedPerson === 'podo' || event.primaryPerson === 'podo';
+          
+          if (isPodoInteraction) {
+            return (
+              <GeoJSON 
+                key={`interaction-${event.id}`}
+                data={{
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [lng, lat]
+                  }
+                } as any}
+                style={{
+                  color: '#ef4444',
+                  fillColor: '#ef4444',
+                  fillOpacity: 0.1,
+                  weight: 1
+                }}
+                onEachFeature={(_f, layer: any) => {
+                  if (layer.setRadius) layer.setRadius(20);
+                }}
+              />
+            );
+          }
+          return null;
+        })}
 
         {/* Event pins */}
         {events.map((event, index) => {

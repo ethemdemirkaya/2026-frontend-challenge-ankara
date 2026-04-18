@@ -1,73 +1,77 @@
-# React + TypeScript + Vite
+# 🕵️ Missing Podo - Ankara Intelligence Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ankara'da gerçekleşen büyük bir etkinlik sonrası kaybolan **Podo**'nun izini sürmek için geliştirilmiş, yüksek teknolojili bir dedektiflik ve istihbarat analiz platformu.
 
-Currently, two official plugins are available:
+![Dashboard Preview](https://via.placeholder.com/1200x600/1e293b/ffffff?text=Ankara+Intelligence+Dashboard+Interface)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📋 Proje Hakkında
 
-## React Compiler
+"Missing Podo", karmaşık ve parçalı istihbarat verilerini (check-inler, saha gözlemleri, mesaj kayıtları ve kişisel notlar) anlamlı birer kanıta dönüştürmek için tasarlanmıştır. Sistem, birden fazla kaynaktan gelen veriyi harmanlar, şüpheliler arasındaki sosyal ağı haritalandırır ve şahsın son görüldüğü noktaları kronolojik olarak takip eder.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Öne Çıkan Özellikler
 
-## Expanding the ESLint configuration
+### 1. 🔍 Gelişmiş "Spotlight" Araması (Ctrl+K)
+*   **Akıllı Filtreleme:** Olay türüne (Mesaj, Görülme, Check-in, İhbar) göre anında daraltma.
+*   **Aciliyet Analizi:** Yüksek öncelikli (Urgency: High) kayıtları anında tespit etme.
+*   **Ağırlıklı Sıralama:** İsim, konum ve içerik eşleşmelerine göre skorlanmış sonuçlar.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 2. 🗺️ İnteraktif Saha Operasyon Haritası
+*   **Dinamik Rota Takibi:** Hedef şahsın ve şüphelilerin zaman içindeki hareketlerini kesikli çizgilerle görselleştirme.
+*   **Bölgesel GeoJSON Filtresi:** Ankara'nın ilçelerine tıklayarak o bölgedeki tüm hareketliliği izole etme.
+*   **Sosyal Bağlantı Katmanı:** Harita üzerinde şüphelilerin Podo ile kesiştiği "sıcak noktaları" görselleştirme.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 3. 🕸️ Kapsamlı Ağ Analizi (Force Graph)
+*   Şüpheliler arasındaki gizli bağları, iletişim trafiğini ve ortak lokasyonları fizik tabanlı bir grafikte analiz etme.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 4. 📊 İstihbarat Raporlama (Nihai Rapor)
+*   **Otomatik Güven Skoru:** Verilerin tutarlılığına göre vaka çözülme olasılığı hesaplaması.
+*   **Kişiselleştirilmiş Karar:** Dedektiflerin kendi notlarını ekleyebileceği ve sistem çıkarımlarıyla karşılaştırabileceği final modülü.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Teknoloji Yığını
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+*   **Frontend:** React, TypeScript, Tailwind CSS 4.
+*   **UI Bileşenleri:** DaisyUI (Modern & Dark Dashboard teması).
+*   **Harita:** React-Leaflet & OpenStreetMap.
+*   **Görselleştirme:** React Force Graph 2D (Network Analysis).
+*   **İkonlar:** Lucide React (Profesyonel istihbarat stili).
+*   **Veri İşleme:** Jotform API & Custom Levensthein Duplicate Detection.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📥 Kurulum
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Projeyi yerel ortamınızda çalıştırmak için şu adımları izleyin:
+
+1.  **Depoyu Klonlayın:**
+    ```bash
+    git clone [repo-url]
+    cd missing-podo
+    ```
+
+2.  **Bağımlılıkları Yükleyin:**
+    ```bash
+    npm install
+    # veya
+    yarn install
+    ```
+
+3.  **Uygulamayı Başlatın:**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Arama Panelini Açın:** Uygulama içindeyken `Ctrl + K` (veya Mac için `Cmd + K`) tuşlarına basarak gelişmiş arama özelliğini başlatın.
+
+## 🗄️ Veri Yapısı ve API
+
+Dashboard, Jotform API üzerinden sağlanan 5 farklı veri kaynağını işlemektedir:
+*   **Checkins:** GPS koordinatlı konum bildirimleri.
+*   **Messages:** Şahıslar arası iletişim ve aciliyet durumları.
+*   **Sightings:** Üçüncü şahıslar tarafından bildirilen fiziksel görülme vakaları.
+*   **Personal Notes:** Dedektif notları ve isim analizleri.
+*   **Tips:** Anonim ihbarlar.
+
+## 🛡️ Güvenlik ve Gizlilik
+
+Bu platform Ankara Merkezli Operasyon Merkezi için özel olarak tasarlanmıştır. Tüm veriler "Need-to-Know" (Bilmesi Gereken) prensibiyle işlenmektedir.
+
+---
+*İstihbarat Dashboard © 2026 - Ankara Vaka Hareket Merkezi*
