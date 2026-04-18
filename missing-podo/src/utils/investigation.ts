@@ -92,6 +92,13 @@ export const processAllData = (data: any) => {
     }
     allEvents.push(event);
   });
+  data.notes?.forEach((item: any) => {
+    if(!item.authorName) return;
+    const p = getOrAddPerson(item.authorName);
+    const event: TimelineEvent = { id: item.id, type: "note", dateObj: parseCustomDate(item.timestamp), displayTime: item.timestamp, primaryPerson: p.id, location: item.location, content: item.note, rawData: item };
+    p.events.push(event);
+    allEvents.push(event);
+  });
 
   // Şüphe Puanı Hesaplama (Basit Algoritma)
   peopleMap.forEach(person => {
