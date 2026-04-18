@@ -1,4 +1,8 @@
-export const API_KEY = "54a934fa20b1ccc3a5bd1d2076f90556";
+export const API_KEYS = [
+  "54a934fa20b1ccc3a5bd1d2076f90556",
+  "YEDEK_API_KEY_1_BURAYA",
+  "YEDEK_API_KEY_2_BURAYA"
+];
 
 export const FORM_IDS = {
   checkins: "261065067494966",
