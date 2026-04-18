@@ -1,7 +1,7 @@
 import { type TimelineEvent } from "../utils/investigation";
 import { getCoords } from "../utils/locations";
 import { ANKARA_GEOJSON, getAnkaraRegions } from "../utils/regions";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
@@ -84,6 +84,23 @@ export const MapView = ({
             </GeoJSON>
           );
         })}
+
+        {events.length > 1 && (() => {
+           const sortedEvents = [...events]
+             .filter(e => e.location)
+             .sort((a,b) => new Date(a.dateObj).getTime() - new Date(b.dateObj).getTime());
+           
+           const routeCoords: [number, number][] = sortedEvents.map((event) => {
+             const originalIndex = events.findIndex(e => e.id === event.id);
+             const [lat, lng] = getCoords(event.location!);
+             // Jitter for identical points to prevent complete overlap
+             const latJitter = (originalIndex % 5) * 0.005 - 0.01;
+             const lngJitter = ((originalIndex * 7) % 5) * 0.005 - 0.01;
+             return [lat + latJitter, lng + lngJitter];
+           });
+
+           return <Polyline positions={routeCoords} pathOptions={{ color: '#ef4444', weight: 4, dashArray: '8, 10', opacity: 0.7 }} />;
+        })()}
 
         {events.map((event, index) => {
           if (!event.location) return null;

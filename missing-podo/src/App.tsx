@@ -14,11 +14,18 @@ import { MapView } from "./components/MapView";
 import { TimelineView } from "./components/TimelineView";
 import { OverviewBoard } from "./components/OverviewBoard";
 import { Footer } from "./components/Footer";
+import { InvestigationReport } from "./components/InvestigationReport";
+import { SpotlightSearch } from "./components/SpotlightSearch";
 
 function App() {
   const [data, setData] = useState<any>(null);
-  const [processed, setProcessed] = useState<{people: PersonRecord[], timeline: TimelineEvent[]} | null>(null);
+  const [processed, setProcessed] = useState<{
+    people: PersonRecord[], 
+    timeline: TimelineEvent[],
+    duplicates?: {sourceId: string, sourceName: string, targetId: string, targetName: string}[]
+  } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mergePairs, setMergePairs] = useState<Record<string, string>>({});
   
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,6 +55,13 @@ function App() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    if (data) {
+      const results = processAllData(data, mergePairs);
+      setProcessed(results);
+    }
+  }, [mergePairs, data]);
 
   const filteredPeople = useMemo(() => {
     let basePeople = processed?.people || [];
@@ -128,9 +142,12 @@ function App() {
             <OverviewBoard 
                totalEvents={processed?.timeline.length || 0} 
                allEvents={processed?.timeline || []} 
+               people={processed?.people || []}
                onPinClick={handlePinClick} 
                selectedRegionId={selectedRegionId}
                onRegionClick={setSelectedRegionId}
+               duplicates={processed?.duplicates}
+               onMerge={(source, target) => setMergePairs(prev => ({...prev, [source]: target}))}
             />
           ) : (
             <div className="max-w-5xl mx-auto space-y-6 lg:space-y-8 animate-fade-in">
@@ -171,9 +188,19 @@ function App() {
         </div>
         
         <Footer />
+        <div className="fixed bottom-6 right-6 z-[100] animate-bounce hover:animate-none">
+           <InvestigationReport processed={processed} />
+        </div>
+        <SpotlightSearch 
+           people={processed?.people || []} 
+           onSelect={(id) => {
+             setSelectedPersonId(id);
+             document.getElementById('investigation-drawer')?.click();
+           }} 
+        />
       </div>
 
-      <div className="drawer-side z-50">
+      <div className="drawer-side z-[99]">
         <label htmlFor="investigation-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
         <Sidebar 
           people={filteredPeople} 

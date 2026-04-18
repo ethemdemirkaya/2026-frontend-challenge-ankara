@@ -35,14 +35,28 @@ export const normalizeName = (name: string): string => {
   return name.toLowerCase().replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s").replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c").trim();
 };
 
-export const processAllData = (data: any) => {
+import { findDuplicates } from "./levenshtein";
+
+export const processAllData = (data: any, mergePairs: Record<string, string> = {}) => {
   const peopleMap = new Map<string, PersonRecord>();
   const allEvents: TimelineEvent[] = [];
 
   const getOrAddPerson = (rawName: string) => {
-    const id = normalizeName(rawName);
+    // Apply merge redirects
+    let canonicalName = rawName;
+    while (mergePairs[canonicalName]) {
+       canonicalName = mergePairs[canonicalName];
+    }
+    
+    let id = normalizeName(canonicalName);
+    // Hard override if the id has a merge redirect (case where the state specifies ids)
+    while (mergePairs[id]) {
+       id = mergePairs[id];
+       canonicalName = id; // Fallback display name for generic merged ids
+    }
+
     if (!peopleMap.has(id)) {
-      peopleMap.set(id, { id, displayName: rawName, events: [], connections: new Set(), suspicionScore: 0 });
+      peopleMap.set(id, { id, displayName: canonicalName, events: [], connections: new Set(), suspicionScore: 0 });
     }
     return peopleMap.get(id)!;
   };
@@ -125,8 +139,20 @@ export const processAllData = (data: any) => {
     person.suspicionScore = Math.min(person.suspicionScore, 100);
   });
 
+  const peopleArray = Array.from(peopleMap.values()).sort((a, b) => b.suspicionScore - a.suspicionScore);
+  const potentialDuplicates = findDuplicates(peopleArray.map(p => p.displayName));
+  const duplicateIdPairs = potentialDuplicates.map(([nameA, nameB]) => {
+     return {
+        sourceId: normalizeName(nameB),
+        sourceName: nameB,
+        targetId: normalizeName(nameA),
+        targetName: nameA
+     };
+  });
+
   return {
-    people: Array.from(peopleMap.values()).sort((a, b) => b.suspicionScore - a.suspicionScore),
-    timeline: allEvents.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
+    people: peopleArray,
+    timeline: allEvents.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime()),
+    duplicates: duplicateIdPairs
   };
 };
