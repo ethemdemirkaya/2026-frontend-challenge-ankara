@@ -2,19 +2,26 @@
 
 export const ANKARA_COORDINATES: Record<string, [number, number]> = {
   // Landmarks
-  "CerModern": [39.9282, 32.8464],
+  "CerModern": [39.93159, 32.84967],       // exact from API
   "Anıtkabir": [39.9250, 32.8369],
   "Kızılay": [39.9208, 32.8541],
   "Tunalı": [39.9056, 32.8606],
   "Bahçelievler": [39.9197, 32.8252],
   "Eymir": [39.8315, 32.8255],
-  "Atakule": [39.8872, 32.8569],
+  "Atakule": [39.88645, 32.85558],         // exact from API
   "Ulus": [39.9419, 32.8544],
   "Cebeci": [39.9329, 32.8732],
   "Dikmen": [39.8789, 32.8378],
   "Bilkent": [39.8744, 32.7486],
   "GOP": [39.8973, 32.8687],
   "Ayrancı": [39.8953, 32.8587],
+
+  // API data specific locations (from Jotform submissions)
+  "Tunalı Hilmi Caddesi": [39.90584, 32.86089],
+  "Kuğulu Park": [39.90194, 32.86028],
+  "Seğmenler Parkı": [39.89333, 32.86353],
+  "Hamamönü": [39.93335, 32.86514],
+  "Ankara Kalesi": [39.94142, 32.86549],
 
   // Districts
   "Çankaya": [39.9208, 32.8541],
@@ -38,9 +45,40 @@ export const ANKARA_COORDINATES: Record<string, [number, number]> = {
   "Şereflikoçhisar": [38.9392, 33.5385]
 };
 
-// Bilinmeyen bir konum gelirse akıllı çözümleme yapar, başarısız olursa Kızılay merkezi döndürür
+const FALLBACK: [number, number] = [39.9208, 32.8541];
+
+// Parse a raw "lat,lng" string (as returned by the Jotform API coordinates field)
+export const parseCoordsString = (coordsStr: string): [number, number] | null => {
+  if (!coordsStr) return null;
+  const parts = coordsStr.split(',');
+  if (parts.length !== 2) return null;
+  const lat = parseFloat(parts[0].trim());
+  const lng = parseFloat(parts[1].trim());
+  if (!isNaN(lat) && !isNaN(lng) && lat > 38 && lat < 42 && lng > 30 && lng < 35) {
+    return [lat, lng];
+  }
+  return null;
+};
+
+/**
+ * Gets coordinates for a TimelineEvent.
+ * Priority:
+ *   1. API 'coordinates' field (most accurate — from Jotform submission)
+ *   2. Text-based location name lookup
+ *   3. Fallback to Kızılay center
+ */
+export const getCoordsFromEvent = (location?: string, coordinates?: string): [number, number] => {
+  if (coordinates) {
+    const parsed = parseCoordsString(coordinates);
+    if (parsed) return parsed;
+  }
+  if (location) return getCoords(location);
+  return FALLBACK;
+};
+
+// Fallback: text-based coordinate lookup by location name
 export const getCoords = (locationStr: string): [number, number] => {
-  if (!locationStr) return [39.9208, 32.8541];
+  if (!locationStr) return FALLBACK;
 
   // 1. Direct Exact Match
   if (ANKARA_COORDINATES[locationStr]) return ANKARA_COORDINATES[locationStr];
@@ -53,18 +91,9 @@ export const getCoords = (locationStr: string): [number, number] => {
     }
   }
 
-  // 3. Raw Lat,Lng string parsing
-  if (locationStr.includes(',')) {
-    const parts = locationStr.split(',');
-    if (parts.length === 2) {
-      const lat = parseFloat(parts[0].trim());
-      const lng = parseFloat(parts[1].trim());
-      // Validate coordinates range in Ankara bounds roughly
-      if (!isNaN(lat) && !isNaN(lng) && lat > 38 && lat < 41 && lng > 31 && lng < 34) {
-        return [lat, lng];
-      }
-    }
-  }
+  // 3. Raw Lat,Lng string parsing as last resort
+  const parsed = parseCoordsString(locationStr);
+  if (parsed) return parsed;
 
-  return [39.9208, 32.8541];
+  return FALLBACK;
 };

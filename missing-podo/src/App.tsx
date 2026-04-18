@@ -3,7 +3,7 @@ import { fetchFormData } from "./services/api";
 import { FORM_IDS } from "./config";
 import { processAllData, type PersonRecord, type TimelineEvent } from "./utils/investigation";
 import { getAnkaraRegions, isPointInGeoJsonPolygon } from "./utils/regions";
-import { getCoords } from "./utils/locations";
+import { getCoordsFromEvent } from "./utils/locations";
 
 // Bileşenler
 import { Sidebar } from "./components/Sidebar";
@@ -74,9 +74,10 @@ function App() {
         const FALLBACK_LAT = 39.9208;
         const FALLBACK_LNG = 32.8541;
         basePeople = basePeople.filter(p => p.events.some(e => {
-          if (!e.location) return false;
+          if (!e.location && !e.coordinates) return false;
           try {
-            const [lat, lng] = getCoords(e.location);
+            // Use getCoordsFromEvent to prefer API exact coordinates
+            const [lat, lng] = getCoordsFromEvent(e.location, e.coordinates);
             // Skip events that resolved to the generic fallback — they cannot be placed
             const isFallback = Math.abs(lat - FALLBACK_LAT) < 0.0001 && Math.abs(lng - FALLBACK_LNG) < 0.0001;
             if (isFallback) return false;

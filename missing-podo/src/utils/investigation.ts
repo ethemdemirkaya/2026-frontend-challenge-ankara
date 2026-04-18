@@ -10,6 +10,7 @@ export interface TimelineEvent {
   primaryPerson: string;
   relatedPerson?: string;
   location?: string;
+  coordinates?: string; // Raw "lat,lng" string from API
   content?: string;
   reliability?: string; // Sadece Tips için
   rawData: any;
@@ -66,19 +67,25 @@ export const processAllData = (data: any, mergePairs: Record<string, string> = {
     const p = getOrAddPerson(item.personName);
     const event: TimelineEvent = {
       id: item.id, type: "checkin", dateObj: parseCustomDate(item.timestamp),
-      displayTime: item.timestamp, primaryPerson: p.id, location: item.location, rawData: item
+      displayTime: item.timestamp, primaryPerson: p.id,
+      location: item.location, coordinates: item.coordinates,
+      content: item.note, // note field in checkins
+      rawData: item
     };
     p.events.push(event);
     allEvents.push(event);
   });
 
-  // 2. Messages
+  // 2. Messages — API field is 'text', not 'message'
   data.messages?.forEach((item: any) => {
     const s = getOrAddPerson(item.senderName);
     const r = getOrAddPerson(item.recipientName);
     const event: TimelineEvent = {
       id: item.id, type: "message", dateObj: parseCustomDate(item.timestamp),
-      displayTime: item.timestamp, primaryPerson: s.id, relatedPerson: r.id, content: item.message, rawData: item
+      displayTime: item.timestamp, primaryPerson: s.id, relatedPerson: r.id,
+      location: item.location, coordinates: item.coordinates,
+      content: item.text || item.message, // API uses 'text' field
+      rawData: item
     };
     s.events.push(event);
     r.events.push(event);
@@ -87,13 +94,15 @@ export const processAllData = (data: any, mergePairs: Record<string, string> = {
     allEvents.push(event);
   });
 
-  // 3. Sightings (Podo ile görülenler en şüphelidir)
+  // 3. Sightings
   data.sightings?.forEach((item: any) => {
     const p1 = getOrAddPerson(item.personName);
     const p2 = getOrAddPerson(item.seenWith);
     const event: TimelineEvent = {
       id: item.id, type: "sighting", dateObj: parseCustomDate(item.timestamp),
-      displayTime: item.timestamp, primaryPerson: p1.id, relatedPerson: p2.id, location: item.location, rawData: item
+      displayTime: item.timestamp, primaryPerson: p1.id, relatedPerson: p2.id,
+      location: item.location, coordinates: item.coordinates,
+      content: item.note, rawData: item
     };
     p1.events.push(event);
     p2.events.push(event);
@@ -106,11 +115,26 @@ export const processAllData = (data: any, mergePairs: Record<string, string> = {
     }
     allEvents.push(event);
   });
+  // 4. Personal Notes
   data.notes?.forEach((item: any) => {
     if(!item.authorName) return;
     const p = getOrAddPerson(item.authorName);
-    const event: TimelineEvent = { id: item.id, type: "note", dateObj: parseCustomDate(item.timestamp), displayTime: item.timestamp, primaryPerson: p.id, location: item.location, content: item.note, rawData: item };
+    const event: TimelineEvent = {
+      id: item.id, type: "note", dateObj: parseCustomDate(item.timestamp),
+      displayTime: item.timestamp, primaryPerson: p.id,
+      location: item.location, coordinates: item.coordinates,
+      content: item.note, rawData: item
+    };
     p.events.push(event);
+    // mentionedPeople field — add connections
+    if (item.mentionedPeople) {
+      const mentioned = String(item.mentionedPeople).split(',').map((n: string) => n.trim()).filter(Boolean);
+      mentioned.forEach((name: string) => {
+        const mp = getOrAddPerson(name);
+        p.connections.add(mp.displayName);
+        mp.connections.add(p.displayName);
+      });
+    }
     allEvents.push(event);
   });
 
@@ -120,7 +144,8 @@ export const processAllData = (data: any, mergePairs: Record<string, string> = {
     const target = getOrAddPerson(item.targetPerson);
     const event: TimelineEvent = { 
       id: item.id, type: "tip", dateObj: parseCustomDate(item.timestamp), 
-      displayTime: item.timestamp, primaryPerson: target.id, location: item.location, 
+      displayTime: item.timestamp, primaryPerson: target.id,
+      location: item.location, coordinates: item.coordinates,
       content: item.tipDetail, reliability: item.reliability, rawData: item 
     };
     target.events.push(event);

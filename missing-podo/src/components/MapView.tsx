@@ -1,5 +1,5 @@
 import { type TimelineEvent } from "../utils/investigation";
-import { getCoords } from "../utils/locations";
+import { getCoordsFromEvent, getCoords } from "../utils/locations";
 import { ANKARA_GEOJSON, getAnkaraRegions } from "../utils/regions";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, GeoJSON, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -69,13 +69,10 @@ export const MapView = ({
 }) => {
   const centerPosition: [number, number] = [39.9208, 32.8541];
 
-  // Collect valid coords for bounds fitting
+  // Collect valid coords for bounds fitting — use API coordinates first
   const allValidCoords: [number, number][] = events
-    .filter(e => e.location)
-    .map((e, i) => {
-      const [lat, lng] = getCoords(e.location!);
-      return [lat + (i % 5) * 0.005 - 0.01, lng + ((i * 7) % 5) * 0.005 - 0.01] as [number, number];
-    });
+    .filter(e => e.location || e.coordinates)
+    .map((e) => getCoordsFromEvent(e.location, e.coordinates));
 
   return (
     <div className="relative w-full aspect-video border border-base-content/10 overflow-hidden rounded-2xl shadow-inner z-0">
@@ -110,28 +107,24 @@ export const MapView = ({
 
         {events.length > 1 && (() => {
            const sortedEvents = [...events]
-             .filter(e => e.location)
+             .filter(e => e.location || e.coordinates)
              .sort((a,b) => new Date(a.dateObj).getTime() - new Date(b.dateObj).getTime());
            
            const routeCoords: [number, number][] = sortedEvents.map((event) => {
-             const originalIndex = events.findIndex(e => e.id === event.id);
-             const [lat, lng] = getCoords(event.location!);
-             // Jitter for identical points to prevent complete overlap
-             const latJitter = (originalIndex % 5) * 0.005 - 0.01;
-             const lngJitter = ((originalIndex * 7) % 5) * 0.005 - 0.01;
-             return [lat + latJitter, lng + lngJitter];
+             return getCoordsFromEvent(event.location, event.coordinates);
            });
 
            return <Polyline positions={routeCoords} pathOptions={{ color: '#ef4444', weight: 4, dashArray: '8, 10', opacity: 0.7 }} />;
         })()}
 
         {events.map((event, index) => {
-          if (!event.location) return null;
-          const [lat, lng] = getCoords(event.location);
+          if (!event.location && !event.coordinates) return null;
+          // Prefer API coordinates field
+          const [lat, lng] = getCoordsFromEvent(event.location, event.coordinates);
           
-          // Jitter for identical points to prevent complete overlap
-          const latJitter = (index % 5) * 0.005 - 0.01;
-          const lngJitter = ((index * 7) % 5) * 0.005 - 0.01;
+          // Small jitter only for events with identical exact coordinates
+          const latJitter = (index % 5) * 0.003 - 0.006;
+          const lngJitter = ((index * 7) % 5) * 0.003 - 0.006;
           
           const isTarget = event.primaryPerson === 'podo' || event.relatedPerson === 'podo';
           const isHovered = hoveredEventId === event.id;
