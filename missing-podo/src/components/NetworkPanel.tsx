@@ -7,12 +7,12 @@ export const NetworkPanel = ({ person }: { person: PersonRecord }) => {
         <h3 className="font-bold border-b border-neutral-content/20 pb-2 mb-4 uppercase">Tespit Edilen Ağ</h3>
         <div className="flex flex-wrap gap-2">
           {Array.from(person.connections).map(c => (
-            <div key={c} className="badge badge-secondary rounded-none">{c}</div>
+            <div key={c} className="badge badge-secondary rounded-sm">{c}</div>
           ))}
           {person.connections.size === 0 && <p className="text-xs opacity-50">Bilinen bir teması yok.</p>}
         </div>
       </div>
-      
+
       <div className="card bg-base-100 rounded-none p-4 shadow-sm border border-base-content/10">
         <h3 className="font-bold border-b border-base-content/10 pb-2 mb-4 uppercase">Analiz Özeti</h3>
         <p className="text-xs leading-relaxed opacity-70">
