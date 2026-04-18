@@ -44,7 +44,7 @@ const MapScrollControls = () => {
   ) : null;
 };
 
-export const MapView = ({ events, onPinClick }: { events: TimelineEvent[], onPinClick?: (id: string) => void }) => {
+export const MapView = ({ events, onPinClick }: { events: TimelineEvent[], onPinClick?: (event: TimelineEvent) => void }) => {
   // Ankara default center
   const centerPosition: [number, number] = [39.9208, 32.8541];
 
@@ -71,20 +71,13 @@ export const MapView = ({ events, onPinClick }: { events: TimelineEvent[], onPin
               key={event.id} 
               position={[lat + latJitter, lng + lngJitter]}
               icon={createPinIcon(isTarget)}
-              eventHandlers={{
-                click: () => {
-                  if (onPinClick) {
-                    onPinClick(event.primaryPerson); // Senkronizasyon için id gönderiyoruz
-                  }
-                }
-              }}
             >
               <Popup className="font-sans min-w-[200px]">
                 <div className="uppercase font-bold text-[10px]">
                   <span className="block text-primary mb-1 text-sm">{event.displayTime}</span>
                   {event.location}
                   {onPinClick && (
-                     <button className="btn btn-xs mt-2 w-full btn-primary" onClick={() => onPinClick(event.primaryPerson)}>Şüpheliyi İncele</button>
+                     <button className="btn btn-xs mt-2 w-full btn-primary" onClick={() => onPinClick(event)}>Şüpheliyi İncele</button>
                   )}
                 </div>
               </Popup>

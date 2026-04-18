@@ -54,11 +54,20 @@ function App() {
   }, [processed, selectedPersonId]);
 
   if (loading) return (
-    <div className="h-screen w-full flex flex-col items-center justify-center bg-neutral text-neutral-content">
+    <div className="h-screen w-full flex flex-col items-center justify-center p-4 text-center bg-neutral text-neutral-content">
       <span className="loading loading-ring loading-lg mb-4 text-primary"></span>
-      <h1 className="text-xl tracking-[0.3em] font-light uppercase">İstihbarat Ağına Bağlanılıyor</h1>
+      <h1 className="text-sm sm:text-xl tracking-[0.1em] sm:tracking-[0.3em] font-light uppercase break-words max-w-full">İstihbarat Ağına Bağlanılıyor</h1>
     </div>
   );
+
+  const handlePinClick = (event: TimelineEvent) => {
+    // Nếu event có relatedPerson và primaryPerson chính là người hiện tại, thì chuyển sang relatedPerson
+    if (selectedPersonId && event.primaryPerson === selectedPersonId && event.relatedPerson) {
+      setSelectedPersonId(event.relatedPerson);
+    } else {
+      setSelectedPersonId(event.primaryPerson);
+    }
+  };
 
   return (
     <div className="drawer lg:drawer-open h-screen bg-base-300 font-sans text-sm">
@@ -84,7 +93,7 @@ function App() {
 
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-16">
           {selectedPerson === null ? (
-            <OverviewBoard totalEvents={processed?.timeline.length || 0} allEvents={processed?.timeline || []} onPinClick={(id) => setSelectedPersonId(id)} />
+            <OverviewBoard totalEvents={processed?.timeline.length || 0} allEvents={processed?.timeline || []} onPinClick={handlePinClick} />
           ) : (
             <div className="max-w-5xl mx-auto space-y-6 lg:space-y-8 animate-fade-in">
               <ProfileCard person={selectedPerson} />
@@ -98,7 +107,7 @@ function App() {
                   <div className="card bg-base-100 shadow-xl rounded-2xl border border-base-content/10">
                     <div className="card-body p-4 lg:p-6">
                       <h3 className="font-bold mb-4 uppercase tracking-widest border-l-4 border-primary pl-4">Saha Operasyon Haritası</h3>
-                      <MapView events={selectedPerson.events} onPinClick={(id) => setSelectedPersonId(id)} />
+                      <MapView events={selectedPerson.events} onPinClick={handlePinClick} />
                     </div>
                   </div>
 

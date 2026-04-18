@@ -4,7 +4,7 @@ import { MapView } from "./MapView";
 interface OverviewProps {
   totalEvents: number;
   allEvents: TimelineEvent[];
-  onPinClick?: (id: string) => void;
+  onPinClick?: (event: TimelineEvent) => void;
 }
 
 export const OverviewBoard = ({ totalEvents, allEvents, onPinClick }: OverviewProps) => {
