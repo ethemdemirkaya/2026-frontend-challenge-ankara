@@ -1,5 +1,11 @@
 import { type PersonRecord, type TimelineEvent } from "../utils/investigation";
 import { useEffect, useState, useRef } from "react";
+import { 
+  Eye, MessageSquare, MapPin, FileText, AlertTriangle, 
+  LayoutDashboard, Search, Calendar, FolderArchive, 
+  Scale, PenTool, CheckCircle2, Info, Flame, History, 
+  BarChart3, ShieldCheck, ChevronRight
+} from "lucide-react";
 
 interface Props {
   processed: { people: PersonRecord[], timeline: TimelineEvent[] } | null;
@@ -83,12 +89,12 @@ export function InvestigationReport({ processed }: Props) {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'sighting': return '👁';
-      case 'message': return '💬';
-      case 'checkin': return '📍';
-      case 'note': return '📝';
-      case 'tip': return '⚠️';
-      default: return '📌';
+      case 'sighting': return <Eye className="w-4 h-4" />;
+      case 'message': return <MessageSquare className="w-4 h-4" />;
+      case 'checkin': return <MapPin className="w-4 h-4" />;
+      case 'note': return <FileText className="w-4 h-4" />;
+      case 'tip': return <AlertTriangle className="w-4 h-4" />;
+      default: return <MapPin className="w-4 h-4" />;
     }
   };
 
@@ -147,7 +153,7 @@ export function InvestigationReport({ processed }: Props) {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 mb-1">
                   <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <span className="text-xl">🗂</span>
+                    <FolderArchive className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <h3 className="font-bold text-xl tracking-tight">Podo Kayıp Vakası</h3>
@@ -171,19 +177,19 @@ export function InvestigationReport({ processed }: Props) {
               {/* Tab Navigation */}
               <div className="flex gap-1 mt-5 p-1 bg-base-300/50 rounded-lg">
                 {[
-                  { id: 'summary', label: 'Özet & Karar', icon: '📊' },
-                  { id: 'analysis', label: 'Veri Analizi', icon: '🔍' },
-                  { id: 'timeline', label: 'Zaman Serisi', icon: '📅' },
+                  { id: 'summary', label: 'Özet & Karar', icon: <BarChart3 className="w-4 h-4" /> },
+                  { id: 'analysis', label: 'Veri Analizi', icon: <Search className="w-4 h-4" /> },
+                  { id: 'timeline', label: 'Zaman Serisi', icon: <History className="w-4 h-4" /> },
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeTab === tab.id
+                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === tab.id
                       ? 'bg-base-100 shadow-sm text-base-content'
                       : 'text-base-content/50 hover:text-base-content/80'
                       }`}
                   >
-                    <span className="mr-2">{tab.icon}</span>
+                    {tab.icon}
                     {tab.label}
                   </button>
                 ))}
@@ -233,7 +239,7 @@ export function InvestigationReport({ processed }: Props) {
                   <div className="relative group bg-gradient-to-br from-error/10 to-error/5 rounded-2xl p-5 border border-error/20 hover:border-error/30 transition-colors">
                     <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-error animate-pulse" />
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg">🔴</span>
+                      <AlertTriangle className="w-4 h-4 text-error" />
                       <h4 className="text-xs font-bold text-error uppercase tracking-widest">En Kritik Şüpheli</h4>
                     </div>
                     <p className="text-2xl font-bold mb-2">{primeSuspect?.displayName}</p>
@@ -246,7 +252,7 @@ export function InvestigationReport({ processed }: Props) {
                   {/* Sıcak Bölge / Son Konum */}
                   <div className="relative bg-gradient-to-br from-info/10 to-info/5 rounded-2xl p-5 border border-info/20 hover:border-info/30 transition-colors">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg">📍</span>
+                      <MapPin className="w-4 h-4 text-info" />
                       <h4 className="text-xs font-bold text-info uppercase tracking-widest">Son Bilinen Konum</h4>
                     </div>
                     <p className="text-2xl font-bold mb-1">{lastEvent?.location || "Bilinmiyor"}</p>
@@ -254,7 +260,9 @@ export function InvestigationReport({ processed }: Props) {
                       {lastEvent?.displayTime} · {lastEvent?.type && getTypeName(lastEvent.type)}
                     </p>
                     {hotLocation && hotLocation[0] !== lastEvent?.location && (
-                      <p className="text-xs text-warning mt-2">🔥 Sıcak bölge: <strong>{hotLocation[0]}</strong> ({hotLocation[1]} olay)</p>
+                      <p className="text-xs text-warning mt-2 flex items-center gap-1">
+                        <Flame className="w-3 h-3" /> Sıcak bölge: <strong>{hotLocation[0]}</strong> ({hotLocation[1]} olay)
+                      </p>
                     )}
                   </div>
                 </div>
@@ -270,7 +278,7 @@ export function InvestigationReport({ processed }: Props) {
                   className="bg-base-200 rounded-2xl p-5 border border-base-content/10"
                 >
                   <h4 className="font-bold uppercase tracking-wider text-sm mb-3 flex items-center gap-2 text-warning">
-                    <span>⚖️</span> Karar Gerekçesi (Sistematik Değerlendirme)
+                    <Scale className="w-4 h-4" /> Karar Gerekçesi (Sistematik Değerlendirme)
                   </h4>
                   <ul className="space-y-2">
                     {reasonings.map((r, i) => (
@@ -297,7 +305,7 @@ export function InvestigationReport({ processed }: Props) {
                   className="bg-gradient-to-r from-success/10 via-success/5 to-transparent rounded-2xl p-5 border border-success/20"
                 >
                   <h4 className="font-bold text-success uppercase tracking-wider text-sm mb-3 flex items-center gap-2">
-                    <span>✍️</span> Dedektif Kararı (Sizin Değerlendirmeniz)
+                    <PenTool className="w-4 h-4" /> Dedektif Kararı (Sizin Değerlendirmeniz)
                   </h4>
                   <textarea
                     className="w-full bg-base-300/60 border border-base-content/10 rounded-xl p-4 text-sm resize-none focus:outline-none focus:border-success/50 min-h-[100px] placeholder-base-content/30"
@@ -306,8 +314,9 @@ export function InvestigationReport({ processed }: Props) {
                     onChange={e => setUserConclusion(e.target.value)}
                   />
                   {userConclusion && (
-                    <div className="mt-3 p-3 bg-success/10 rounded-xl border border-success/20">
-                      <p className="text-xs text-success font-medium">✅ Değerlendirme kaydedildi — Bu sekme açık kaldığı sürece korunur.</p>
+                    <div className="mt-3 p-3 bg-success/10 rounded-xl border border-success/20 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-success" />
+                      <p className="text-xs text-success font-medium">Değerlendirme kaydedildi — Bu sekme açık kaldığı sürece korunur.</p>
                     </div>
                   )}
                 </div>

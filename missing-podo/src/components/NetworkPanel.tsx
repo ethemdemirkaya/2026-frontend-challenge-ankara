@@ -1,4 +1,5 @@
 import type { PersonRecord } from "../utils/investigation";
+import { Link2 } from "lucide-react";
 
 export const NetworkPanel = ({ person }: { person: PersonRecord }) => {
   const connectionCount = person.connections.size;
@@ -8,7 +9,7 @@ export const NetworkPanel = ({ person }: { person: PersonRecord }) => {
       <div className="card bg-base-100 shadow-xl border border-secondary/20">
         <div className="card-body p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🔗</span>
+            <Link2 className="w-5 h-5 text-primary shrink-0" />
             <h3 className="font-bold uppercase tracking-widest text-primary border-b border-primary/20 pb-1 flex-1">İrtibat ve Bağlantılar</h3>
           </div>
           
